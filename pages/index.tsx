@@ -1,86 +1,85 @@
 import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
+import Layout from '../components/Layout/Layout'
+import {useEffect, useState} from "react"
+import {useAppDispatch, useAppSelector} from "redux/hook"
+import SplashScreen from "components/app/SplashScreen"
+import {appReady} from "redux/slices/App"
+import { Wrapper } from '@googlemaps/react-wrapper'
+import { Map } from 'components/map'
+import Circle from 'components/map/Circle'
 
 const Home: NextPage = () => {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    const ready = useAppSelector(state => state.app.ready)
+    const dispatch = useAppDispatch()
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+    const [center, setCenter] = useState<google.maps.LatLngLiteral>({
+      lat: 45.7555016,
+      lng: 4.8296179,
+    })
+    const [myPos, setMyPos] = useState<google.maps.LatLngLiteral>({
+      lat: 45.7555016,
+      lng: 4.8296179
+    })
+    const [zoom, setZoom] = useState(15)
+    
+    const onIdle = (map: google.maps.Map) => {
+        if (!map) return;
+        setZoom(map.getZoom()!);
+        setCenter(map.getCenter()!.toJSON());
+    };
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
+    useEffect(() => {
+        setTimeout(() => dispatch(appReady()), 6000)
+    }, [])
 
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
+    if (!ready) return <SplashScreen />
 
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer>
-    </div>
-  )
+    return (
+        <Layout title="Fat Renard">
+            <Wrapper apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}>
+                {/* {zone && ( */}
+              <Map
+                center={center}
+                zoom={zoom}
+                style={{ width: "100%", height: "100%" }}
+                onIdle={onIdle}
+              >
+                {/* {zone.paths && (
+                  <Polygon
+                    strokeColor="#ff0000"
+                    strokeOpacity={1}
+                    strokeWeight={3}
+                    fillColor="#a30000"
+                    fillOpacity={0.4}
+                    paths={zone.paths}
+                  />
+                )} */}
+                {myPos && (
+                  <Circle
+                    center={{ lat: myPos.lat, lng: myPos.lng }}
+                    strokeColor="#0000ff"
+                    strokeOpacity={0.8}
+                    strokeWeight={zoom > 7 ? 4 : 2}
+                    fillColor="#0000ff"
+                    fillOpacity={0.2}
+                    radius={1.2}
+                  />
+                )}
+                {/* {chased && (
+                  <Circle
+                    center={{ lat: chased.latitude, lng: chased.longitude }}
+                    strokeColor="#C04A18"
+                    strokeOpacity={0.8}
+                    strokeWeight={zoom > 7 ? 4 : 2}
+                    fillColor="#C04A18"
+                    fillOpacity={0.5}
+                    radius={chased.accuracy}
+                  />
+                )} */}
+              </Map>
+            </Wrapper>
+        </Layout>
+    )
 }
 
 export default Home

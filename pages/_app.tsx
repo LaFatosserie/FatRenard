@@ -1,8 +1,17 @@
 import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+import { AppProps } from "next/app";
+import { Provider } from "react-redux";
+import store from '../redux/store'
+import { NextUIProvider } from '@nextui-org/react';
+import ModalController from 'components/app/ModalController';
 
-function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
-}
+const FatApp = ({ Component, pageProps }: AppProps) => (
+  <Provider store={store}>
+    <NextUIProvider>
+      <Component {...pageProps} />
+      <ModalController />
+    </NextUIProvider>
+  </Provider>
+);
 
-export default MyApp
+export default FatApp
