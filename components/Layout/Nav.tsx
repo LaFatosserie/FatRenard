@@ -1,6 +1,6 @@
 import { Navbar, Text, Dropdown, Avatar, Link, Button } from "@nextui-org/react"
 import { useAppDispatch, useAppSelector } from "redux/hook"
-import { appOpenModal } from "redux/slices/App"
+import { appOpenModal, userLoggedOut } from "redux/slices/App"
 import { MODALS } from "types/App"
 
 const Nav = () => {
@@ -10,9 +10,13 @@ const Nav = () => {
         "Dashboard",
     ]
     const loggedIn = useAppSelector(state => state.app.loggedIn)
+    const user = useAppSelector(state => state.app.user)
 
     const openConnectModal = () => {
         dispatch(appOpenModal({ name: MODALS.SIGN_IN, params: {} }))
+    }
+    const handleLogout = () => {
+      dispatch(userLoggedOut())
     }
 
     return (
@@ -56,13 +60,14 @@ const Nav = () => {
                 <Navbar.Item>
                     {loggedIn ? (
                         <Dropdown.Trigger>
-                            <Avatar
+                            {user && <Avatar
                                 bordered
                                 as="button"
                                 color="warning"
                                 size="md"
-                                src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-                            />
+                                text={`${user?.firstname[0] + user?.lastname[0]}`}
+                                // src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                            />}
                         </Dropdown.Trigger>
                     ) : (
                         <Button bordered color="gradient" auto onClick={openConnectModal}>
@@ -73,23 +78,27 @@ const Nav = () => {
                 <Dropdown.Menu
                   aria-label="User menu actions"
                   color="warning"
-                  onAction={(actionKey) => console.log({ actionKey })}
+                  onAction={(actionKey) => {
+                    console.log(actionKey)
+                    if (actionKey == 'logout')
+                      handleLogout()
+                  }}
                 >
-                  <Dropdown.Item key="profile" css={{ height: "$18" }}>
+                  <Dropdown.Item key="profile" css={{ height: "$18" }} textValue="SignedIn">
                     <Text b color="inherit" css={{ d: "flex" }}>
                       Signed in as
                     </Text>
                     <Text b color="inherit" css={{ d: "flex" }}>
-                      zoey@example.com
+                      {`${user?.username}`}
                     </Text>
                   </Dropdown.Item>
-                  <Dropdown.Item key="settings" withDivider>
+                  <Dropdown.Item key="settings" withDivider textValue="Paramètres">
                     Paramètres
                   </Dropdown.Item>
                   {/* <Dropdown.Item key="team_settings">Joueurs</Dropdown.Item> */}
-                  <Dropdown.Item key="system">Informations de l'application</Dropdown.Item>
+                  <Dropdown.Item key="system" textValue="Infos">Informations de l'application</Dropdown.Item>
                   {/* <Dropdown.Item key="configurations">Bonus</Dropdown.Item> */}
-                  <Dropdown.Item key="logout" withDivider color="error">
+                  <Dropdown.Item key="logout" withDivider color="error" textValue="Logout">
                     Log Out
                   </Dropdown.Item>
                 </Dropdown.Menu>

@@ -18,6 +18,9 @@ const Layout = ({ title, children }: TLayoutProps) => {
       <main style={{ overflowX: "hidden", height: '100vh' }}>
         <Nav />
         {children}
+        <div>
+
+        </div>
       </main>
     </div>
   );

@@ -3,7 +3,7 @@ import Layout from '../components/Layout/Layout'
 import {useEffect, useState} from "react"
 import {useAppDispatch, useAppSelector} from "redux/hook"
 import SplashScreen from "components/app/SplashScreen"
-import {appReady} from "redux/slices/App"
+import {appReady, signInWithToken} from "redux/slices/App"
 import { Wrapper } from '@googlemaps/react-wrapper'
 import { Map } from 'components/map'
 import Circle from 'components/map/Circle'
@@ -29,7 +29,11 @@ const Home: NextPage = () => {
     };
 
     useEffect(() => {
-        setTimeout(() => dispatch(appReady()), 6000)
+        setTimeout(() => dispatch(appReady()), 2000)
+        const token = localStorage.getItem('__fat_token__')
+        if (token) {
+          dispatch(signInWithToken(token))
+        }
     }, [])
 
     if (!ready) return <SplashScreen />
