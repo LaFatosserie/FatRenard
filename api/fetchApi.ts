@@ -33,7 +33,7 @@ export async function fetchApi<T>({
 }: TFetchProps) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBKIC_FATAPI_URL}${endpoint}${encodeQueryParams(queryParams)}`,
+      `${process.env.NEXT_PUBLIC_FATAPI_URL}${endpoint}${encodeQueryParams(queryParams)}`,
       {
         method,
         body: body ? JSON.stringify(body) : undefined,

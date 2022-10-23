@@ -42,6 +42,17 @@ class UsersController {
     return person
   }
 
+  async getByToken(token: string) {
+    const user = await fetchApi<TUser>({
+      endpoint: `${this.BASE_ENDPOINT}/me`,
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    return user
+  }
+
   async delete(id: number) {
     const person = await fetchApi<any>({
       endpoint: `${this.BASE_ENDPOINT}/${id}`,
