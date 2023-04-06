@@ -17,6 +17,7 @@ const initialState: IAppState = {
   loggedIn: false,
   playerType: undefined,
   authLoading: false,
+  error: '',
   game: {
     id: "",
     foxId: "",
@@ -32,9 +33,10 @@ export const logInUser = createAsyncThunk(
   async ({ username, password }: { username: string, password: string },
     { rejectWithValue, dispatch }) => {
     const res = await new AuthController().login(username, password);
+    console.log("LOGIN ASYNC RES", res)
     if (!res || (res && !res.ok)) {
-      rejectWithValue(res?.error)
-      return
+      console.log('REJECT')
+      return rejectWithValue(res?.error)
     }
     console.log("SIGNED IN")
     // Save Token
@@ -208,7 +210,7 @@ const appSlice = createSlice({
     builder.addCase(logInUser.rejected, (state, action) => {
       state.authLoading = false
       state.loggedIn = false
-      state.error = action.error.message
+      state.error = action.payload as string
     })
     // ME
     builder.addCase(me.pending, (state) => {
@@ -282,6 +284,7 @@ export const selectPlayerType = (state: RootState) => state.app.playerType;
 export const selectGame = (state: RootState) => state.app.game;
 export const selectFoxId = (state: RootState) => state.app.game?.foxId;
 export const selectAuthLoading = (state: RootState) => state.app.authLoading;
+export const selectError = (state: RootState) => state.app.error;
 // export const selectFoxPos = (state: RootState) => state.app.game?.foxPos;
 export const selectGamePlayers = (state: RootState) => state.app.game?.players;
 export const selectGameZone = (state: RootState) => state.app.game?.zoneId;

@@ -40,7 +40,7 @@ const Home: NextPage = () => {
       } else  if (!loggedIn && token) {
         router.push('auth/signin')
       }
-      setTimeout(() => dispatch(appReady()), 6000)
+      setTimeout(() => dispatch(appReady()), 3000)
     }, [loggedIn])
 
     if (!ready) return <SplashScreen />

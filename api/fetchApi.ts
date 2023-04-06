@@ -59,7 +59,7 @@ export async function fetchApi<T>({
         ok: res.ok,
         status: res.status,
         data: {} as T,
-        error: `${data.error ? data.error : ''} - ${data.message}`
+        error: `${data.message}${data.error ? data.error : ''}`
       } as TFetchResponse<T>
     }
     console.log('[FETCH API] - Successful request', data)

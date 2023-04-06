@@ -5,13 +5,14 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'redux/hook'
 import { selectUserLoggedIn } from 'redux/selectors'
-import { logInUser, selectAuthLoading } from 'redux/slices/App'
+import { logInUser, selectAuthLoading, selectError } from 'redux/slices/App'
 
 function SignIn() {
   const dispatch = useAppDispatch()
   const router = useRouter()
   const loggedIn = useAppSelector(selectUserLoggedIn)
   const loading = useAppSelector(selectAuthLoading)
+  const error = useAppSelector(selectError)
   
   const [username, setUsername] = useState('')
   const [password, setPwd] = useState('')
@@ -59,6 +60,8 @@ function SignIn() {
             value={password}
             rounded
             fullWidth
+            helperText={error}
+            helperColor='error'
             onChange={e => setPwd(e.target.value)}
           />
           <Spacer />

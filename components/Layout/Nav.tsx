@@ -1,5 +1,6 @@
 import { Navbar, Text, Dropdown, Avatar, Link, Button } from "@nextui-org/react"
 import { useRouter } from "next/router"
+import { Key } from "react"
 import { useAppDispatch, useAppSelector } from "redux/hook"
 import { logout, selectUser, selectUserLoggedIn } from "redux/slices/App"
 import { getRoutes } from "utils/routes"
@@ -11,6 +12,19 @@ const Nav = () => {
     const loggedIn = useAppSelector(selectUserLoggedIn)
     const user = useAppSelector(selectUser)
     const collapseItems = getRoutes(loggedIn, user?.admin || false)
+
+    const onAction = (actionkey: Key) => {
+      switch(actionkey) {
+        case 'profile':
+          router.push('/user/account')
+          break;
+        case 'logout':
+          dispatch(logout())
+          break;
+        default: 
+          console.log('UNSUPPORTED OPTION', actionkey)
+      }
+    }
 
     return (
         <div style={{ width: '100vw', position: 'absolute', top: 0, left: 0, right: 0 }}>
@@ -67,15 +81,10 @@ const Nav = () => {
                 <Dropdown.Menu
                   aria-label="User menu actions"
                   color="warning"
-                  onAction={(actionKey) => console.log({ actionKey })}
+                  onAction={onAction}
                 >
-                  <Dropdown.Item key="profile" css={{ height: "$18" }}>
-                    <Text b color="inherit" css={{ d: "flex" }}>
-                      Hello {user?.firstname}
-                    </Text>
-                    <Text b color="inherit" css={{ d: "flex" }}>
-                      {user?.email}
-                    </Text>
+                  <Dropdown.Item key="profile" css={{ height: "$18" }} >
+                      {`Hello ${user?.firstname}`}
                   </Dropdown.Item>
                   <Dropdown.Item key="settings" withDivider>
                     Paramètres
@@ -84,9 +93,7 @@ const Nav = () => {
                   <Dropdown.Item key="system">Informations de l'application</Dropdown.Item>
                   {/* <Dropdown.Item key="configurations">Bonus</Dropdown.Item> */}
                   <Dropdown.Item key="logout" withDivider color="error">
-                    <div onClick={() => dispatch(logout())}>
                       Se deconnecter
-                    </div>
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
