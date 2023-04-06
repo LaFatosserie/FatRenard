@@ -16,13 +16,13 @@ export type TUser = {
 
 // User
 export interface IUserLoginAction {
-  type: typeof CONST.USER_LOGIN;
+  type: typeof CONST.LOGIN;
   user: TUser;
   loggedIn: boolean;
 }
 
 export interface IUserLogoutAction {
-  type: typeof CONST.USER_LOGOUT;
+  type: typeof CONST.LOGOUT;
 }
 
 export interface IUserUpdateAction {

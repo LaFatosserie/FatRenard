@@ -1,19 +1,16 @@
 import { Navbar, Text, Dropdown, Avatar, Link, Button } from "@nextui-org/react"
+import { useRouter } from "next/router"
 import { useAppDispatch, useAppSelector } from "redux/hook"
-import { appOpenModal } from "redux/slices/App"
-import { MODALS } from "types/App"
+import { logout, selectUser, selectUserLoggedIn } from "redux/slices/App"
+import { getRoutes } from "utils/routes"
 
 const Nav = () => {
     const dispatch = useAppDispatch()
-    const collapseItems = [
-        "Profile",
-        "Dashboard",
-    ]
-    const loggedIn = useAppSelector(state => state.app.loggedIn)
+    const router = useRouter()
 
-    const openConnectModal = () => {
-        dispatch(appOpenModal({ name: MODALS.SIGN_IN, params: {} }))
-    }
+    const loggedIn = useAppSelector(selectUserLoggedIn)
+    const user = useAppSelector(selectUser)
+    const collapseItems = getRoutes(loggedIn, user?.admin || false)
 
     return (
         <div style={{ width: '100vw', position: 'absolute', top: 0, left: 0, right: 0 }}>
@@ -37,12 +34,9 @@ const Nav = () => {
               hideIn="xs"
               variant="highlight"
             >
-              <Navbar.Link href="#">Features</Navbar.Link>
-              <Navbar.Link isActive href="#">
-                Customers
-              </Navbar.Link>
-              <Navbar.Link href="#">Pricing</Navbar.Link>
-              <Navbar.Link href="#">Company</Navbar.Link>
+              {collapseItems.map(item => (
+                <Navbar.Link isActive={router.pathname === item.pathname} href={item.pathname}>{item.label}</Navbar.Link>
+              ))}
             </Navbar.Content>
             <Navbar.Content
               css={{
@@ -64,8 +58,8 @@ const Nav = () => {
                                 src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
                             />
                         </Dropdown.Trigger>
-                    ) : (
-                        <Button bordered color="gradient" auto onClick={openConnectModal}>
+                    ) : router.pathname === '/auth/signin' ? ( <></> ) : (
+                        <Button bordered color="gradient" auto onClick={() => router.push('/auth/signin')}>
                             Connexion
                         </Button>
                     )}
@@ -77,10 +71,10 @@ const Nav = () => {
                 >
                   <Dropdown.Item key="profile" css={{ height: "$18" }}>
                     <Text b color="inherit" css={{ d: "flex" }}>
-                      Signed in as
+                      Hello {user?.firstname}
                     </Text>
                     <Text b color="inherit" css={{ d: "flex" }}>
-                      zoey@example.com
+                      {user?.email}
                     </Text>
                   </Dropdown.Item>
                   <Dropdown.Item key="settings" withDivider>
@@ -90,7 +84,9 @@ const Nav = () => {
                   <Dropdown.Item key="system">Informations de l'application</Dropdown.Item>
                   {/* <Dropdown.Item key="configurations">Bonus</Dropdown.Item> */}
                   <Dropdown.Item key="logout" withDivider color="error">
-                    Log Out
+                    <div onClick={() => dispatch(logout())}>
+                      Se deconnecter
+                    </div>
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -98,23 +94,23 @@ const Nav = () => {
             <Navbar.Collapse disableAnimation>
               {collapseItems.map((item, index) => (
                 <Navbar.CollapseItem
-                  key={item}
-                  activeColor="warning"
-                  isActive={index === 2}
+                  key={item.pathname}
+                  activeColor='warning'
+                  isActive={router.pathname === item.pathname}
                 >
                   <Link
                     color="inherit"
                     css={{
                       minWidth: "100%",
                     }}
-                    href="#"
+                    href={item.pathname}
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </Navbar.CollapseItem>
               ))}
             </Navbar.Collapse>
-                  </Navbar>
+          </Navbar>
         </div>
     )
 }

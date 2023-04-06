@@ -3,7 +3,6 @@ import {
   createEntityAdapter,
   createSlice,
 } from "@reduxjs/toolkit";
-import API from "../../api/fatapi";
 import { RootState } from "redux/store";
 import { EntityState } from "types/App";
 import type { TUser } from "types/User";
