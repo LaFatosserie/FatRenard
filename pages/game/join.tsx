@@ -4,7 +4,8 @@ import { WaitingPlayersCard } from "components/cards/PlayersCard"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { useAppDispatch, useAppSelector } from "redux/hook"
-import { selectGame } from "redux/slices/App"
+import { loadGame, selectGame } from "redux/slices/App"
+import { GameStatus } from "types/Game"
 
 const players = [
   { firstname: 'Arthur', lastname: 'Walsh' },
@@ -20,10 +21,9 @@ const JoinGame = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
 
-  // const game = useAppSelector(selectGame)
+  const game = useAppSelector(selectGame)
 
   const [code, setCode] = useState('')
-  const [game, setGame] = useState(false)
   const [error, setError] = useState('')
   const [joining, setJoining] = useState(false)
 
@@ -35,22 +35,17 @@ const JoinGame = () => {
     if (error !== '')
       setError('')
     setJoining(true)
-    setTimeout(() => {
+    dispatch(loadGame({ id: code, joining: true })).unwrap().then(() => {
       setJoining(false)
-      setGame(true)
-    }, 3000)
+      router.push({ pathname: '/game/waiting', query: { joining: true }})
+    })
   }
-
-  // useEffect(() => {
-  //   if (game.status === 'ready')
-  //     router.push('/')
-  // }, [game.status])
 
   return (
     <Layout title="Join Game">
       <Spacer y={4} />
       <Grid.Container gap={2}>
-        {!game && <><Grid xs={12}>
+        <Grid xs={12}>
           <Text size='$2xl'>Rejoindre une partie</Text>
         </Grid>
         <Grid xs={12}>
@@ -68,15 +63,12 @@ const JoinGame = () => {
               color='warning'
               auto flat rounded bordered
               onPress={join}
+              disabled={joining}
             >
               {joining ? <Loading type='points' size='sm' /> : 'Rejoindre'}
             </Button>
           </Col>
         </Grid>
-        </>}
-        {game && <Grid xs={12}>
-          <WaitingPlayersCard players={players} />
-        </Grid>}
       </Grid.Container>
     </Layout>
   )

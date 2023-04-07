@@ -3,8 +3,12 @@ import Layout from "components/Layout/Layout"
 import { IconButton } from "components/button/IconButton"
 import { WaitingPlayersCard } from "components/cards/PlayersCard"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Clipboard } from "react-feather"
+import { useAppDispatch, useAppSelector } from "redux/hook"
+import { loadGame, selectGame } from "redux/slices/App"
+import { loadZone, selectZoneById } from "redux/slices/Zones"
+import { RootState } from "redux/store"
 
 const players = [
   { firstname: 'Arthur', lastname: 'Walsh' },
@@ -18,12 +22,15 @@ const players = [
 
 const WaitingGame = () => {
   const router = useRouter()
-  const { name, time, code, zone } = router.query
+  const dispatch = useAppDispatch()
+  const { joining, code, zone } = router.query
 
   const [starting, setStarting] = useState(false)
+  const game = useAppSelector(selectGame)
+  const activeZone = useAppSelector((state: RootState) => selectZoneById(state, zone as string))
 
   const copyCode = () => {
-    console.log('COPY')
+    navigator.clipboard.writeText(code as string)
   }
 
   const startGame = () => {
@@ -34,6 +41,14 @@ const WaitingGame = () => {
     }, 5000)
   }
 
+  useEffect(() => {
+    if (!activeZone && zone)
+      dispatch(loadZone(zone as string))
+    const localGameId = localStorage.getItem('__fat_game__')
+    if (!game && localGameId)
+      dispatch(loadGame({ id: localGameId, joining: false }))
+  }, [game, activeZone])
+
   return (
     <Layout title='Waiting for Players'>
       <Spacer y={4} />
@@ -41,17 +56,17 @@ const WaitingGame = () => {
         <Grid xs={6}>
           <Col>
             <Text>
-              Name {name}
+              Name {game.name}
             </Text>
             <Text>
-              Interval Time {time}s
+              Interval Time {game.time}s
             </Text>
             <Text>
-              Zone ID {zone}
+              Zone {activeZone?.name}
             </Text>
           </Col>
         </Grid>
-        <Grid xs={6}>
+        {!joining && <Grid xs={6}>
           <Input
             value={code}
             disabled={true}
@@ -63,11 +78,11 @@ const WaitingGame = () => {
               </IconButton>
             }
           />
-        </Grid>
+        </Grid>}
         <Grid xs={12}>
           <WaitingPlayersCard players={players} />
         </Grid>
-        <Grid xs={12}>
+        {!joining && <Grid xs={12}>
           <Button
             disabled={players.length < 2}
             style={{ width: '100%' }}
@@ -77,7 +92,7 @@ const WaitingGame = () => {
           >
             {starting ? <Loading size='sm' type='points' /> : 'Commencer la partie'}
           </Button>
-        </Grid>
+        </Grid>}
       </Grid.Container>
     </Layout>
   )

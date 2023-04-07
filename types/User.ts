@@ -1,4 +1,5 @@
 import CONST from "redux/constants";
+import { User } from "./App";
 
 export type TLocation = {
   latitude: number;
@@ -6,18 +7,10 @@ export type TLocation = {
   accuracy: number;
 };
 
-export type TUser = {
-  id: string;
-  firstname: string;
-  lastname: string;
-  location: TLocation;
-  lastPosTime: number;
-};
-
 // User
 export interface IUserLoginAction {
   type: typeof CONST.LOGIN;
-  user: TUser;
+  user: User;
   loggedIn: boolean;
 }
 
@@ -27,12 +20,12 @@ export interface IUserLogoutAction {
 
 export interface IUserUpdateAction {
   type: typeof CONST.USER_UPDATE;
-  user: TUser;
+  user: User;
 }
 
 export interface IUserState {
   loggedIn: boolean;
-  user: TUser | undefined;
+  user: User | undefined;
 }
 
 export type TUserActionTypes =

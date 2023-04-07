@@ -4,9 +4,11 @@ import Layout from "components/Layout/Layout"
 import { Map } from "components/map"
 import Polygon from "components/map/Polygon"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check } from "react-feather"
 import { useAppDispatch } from "redux/hook"
+import { me } from "redux/slices/App"
+import { addZone } from "redux/slices/Zones"
 
 function ZoneGenerator() {
   const dispatch = useAppDispatch()
@@ -22,7 +24,7 @@ function ZoneGenerator() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [smallZone, setSmallZone] = useState<google.maps.LatLngLiteral[]>([])
-  const [meduimZone, setMeduimZone] = useState<google.maps.LatLngLiteral[]>([])
+  const [mediumZone, setMeduimZone] = useState<google.maps.LatLngLiteral[]>([])
   const [largeZone, setLargeZone] = useState<google.maps.LatLngLiteral[]>([])
 
   const [workZone, setWorkZone] = useState(0)
@@ -78,12 +80,27 @@ function ZoneGenerator() {
   }
 
   const isSavable = () => {
-    return name === '' || description === '' || smallZone.length === 0 || meduimZone.length === 0 || largeZone.length === 0
+    return name === '' || description === '' || smallZone.length === 0 || mediumZone.length === 0 || largeZone.length === 0
   }
+
+  useEffect(() => {
+    const token = localStorage.getItem('__fat_token__')
+    if (token) {
+      dispatch(me())
+    }
+  }, [])
 
   const save = () => {
     setLoading(true)
-    setTimeout(() => {
+    dispatch(addZone({
+      name,
+      description,
+      center,
+      zoom,
+      smallZone,
+      mediumZone,
+      largeZone
+    })).unwrap().then(() => {
       setLoading(false)
       setSmallZone([])
       setMeduimZone([])
@@ -91,7 +108,8 @@ function ZoneGenerator() {
       setDescription('')
       setName('')
       setWorkZone(0)
-    }, 5000)
+    })
+
   }
 
   return (
@@ -171,9 +189,9 @@ function ZoneGenerator() {
                       <Text>{`Small ${smallZone.length} Pts`}</Text>
                     </Card>
                   }
-                  {meduimZone.length > 0 && 
+                  {mediumZone.length > 0 && 
                     <Card style={{ maxWidth: '150px', padding: 10 }}>
-                      <Text>{`Meduim ${meduimZone.length} Pts`}</Text>
+                      <Text>{`Meduim ${mediumZone.length} Pts`}</Text>
                     </Card>
                   }
                   {largeZone.length > 0 && 
@@ -210,8 +228,8 @@ function ZoneGenerator() {
                 paths={smallZone}
                 strokeColor='#ff0000'
               />}
-              {meduimZone.length > 0 && <Polygon
-                paths={meduimZone}
+              {mediumZone.length > 0 && <Polygon
+                paths={mediumZone}
                 strokeColor='#00ff00'
               />}
               {largeZone.length > 0 && <Polygon

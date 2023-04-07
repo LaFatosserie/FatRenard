@@ -62,7 +62,6 @@ export async function fetchApi<T>({
         error: `${data.message}${data.error ? data.error : ''}`
       } as TFetchResponse<T>
     }
-    console.log('[FETCH API] - Successful request', data)
     return {
       data,
       ok: true,
@@ -71,7 +70,6 @@ export async function fetchApi<T>({
     } as TFetchResponse<T>
   } catch (e) {
     if (e instanceof Error) {
-      console.error('ERROR FETCH - ', e.message, e.cause, e.name)
       return {
         ok: false,
         status: 500,

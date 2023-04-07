@@ -1,5 +1,4 @@
-import { TGame } from "./Game";
-import { TUser } from "./User";
+import { Game, TGame } from "./Game";
 import CONST from '../redux/constants'
 import { Player } from "./Player";
 
@@ -63,6 +62,6 @@ export interface IAppState {
   playerType: EPlayerType | undefined;
   user: undefined | User;
   loggedIn: boolean;
-  game: TGame;
+  game: Game;
   authLoading: boolean
 }

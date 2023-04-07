@@ -2,22 +2,19 @@ import { Button, Col, Grid, Input, Loading, Modal, Row, Spacer, StyledButtonGrou
 import Layout from "components/Layout/Layout";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "redux/hook";
+import { useAppDispatch, useAppSelector } from "redux/hook";
 import { Check } from "react-feather";
 import { ZoneCard } from "components/cards/ZoneCard";
-
-const zones = [
-  { id: 'id1', title: 'Lyon', description: 'Zone dans la presauil de Lyon' },
-  { id: 'id2', title: 'Lille', description: 'Zone dans lille' },
-  { id: 'id3', title: 'Marseille', description: 'Zone dans Marseille' },
-  { id: 'id3', title: 'Marseille', description: 'Zone dans Marseille' },
-  { id: 'id3', title: 'Marseille', description: 'Zone dans Marseille' },
-  { id: 'id3', title: 'Marseille', description: 'Zone dans Marseille' },
-]
+import { fetchAllZones, selectAllZones } from "redux/slices/Zones";
+import { createGame, selectUserId } from "redux/slices/App";
+import { Game } from "types/Game";
 
 const CreateGame = () => {
   const dispatch = useAppDispatch()
   const router = useRouter()
+
+  const zones = useAppSelector(selectAllZones)
+  const userId = useAppSelector(selectUserId)
 
   const [gameName, setGameName] = useState('')
   const [time, setTime] = useState(0)
@@ -32,13 +29,18 @@ const CreateGame = () => {
     else setTime(id)
   }
 
-  const createGame = () => {
+  const create = () => {
     setLoading(true)
-    setTimeout(() => {
+    dispatch(createGame({ name: gameName, zoneId: zone, public: publique, playersId: userId ? [userId] : [], time })).unwrap().then((game: Game) => {
       setLoading(false)
-      router.push({ pathname: `/game/waiting`, query: { name: gameName, zone, time, code: 'FAK3C0D3' } })
-    }, 3000)
+      router.push({ pathname: `/game/waiting`, query: { name: gameName, zone, time, code: game.code } })
+    })
   }
+
+  useEffect(() => {
+    if (zones.length < 1)
+      dispatch(fetchAllZones())
+  }, [zones])
 
   return (
     <Layout title="Create Game">
@@ -83,7 +85,7 @@ const CreateGame = () => {
         </Grid>
         <Grid xs={12}>
           <Button onPress={() => setVisible(true)} auto flat bordered rounded color={zone === '' ? 'warning' : 'success'} style={{ width: '100%' }}>
-            {zone === '' ? 'Choisir Zone' : zones.find(z => z.id === zone)?.title}
+            {zone === '' ? 'Choisir Zone' : zones.find(z => z._id === zone)?.name}
           </Button>
           <Modal blur scroll {...bindings}>
             <Modal.Header>
@@ -92,7 +94,7 @@ const CreateGame = () => {
               </Text>
             </Modal.Header>
             <Modal.Body>
-              {zones.map(zone => <ZoneCard zone={zone} onPress={() => { setZone(zone.id); setVisible(false) }} />)}
+              {zones.map(zone => <ZoneCard zone={zone} onPress={() => { setZone(zone._id); setVisible(false) }} />)}
             </Modal.Body>
             <Modal.Footer>
               <Button auto flat color='error' onPress={() => setVisible(false)}>
@@ -109,7 +111,7 @@ const CreateGame = () => {
             auto flat rounded bordered color='warning'
             disabled={!zone || !gameName || time === 0}
             style={{ width: '100%' }}
-            onPress={createGame}
+            onPress={create}
           >
             {loading ? <Loading type='points' size='sm' /> : 'Créer la partie'}
           </Button>

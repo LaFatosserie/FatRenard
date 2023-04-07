@@ -1,5 +1,5 @@
 import { fetchApi } from "api/fetchApi";
-import { TGame } from "types/Game";
+import { Game, GameCreation, TGame } from "types/Game";
 
 /**
  * GAMES
@@ -8,23 +8,31 @@ class GamesController {
   private BASE_ENDPOINT = '/games';
 
   async getAll() {
-    const games = await fetchApi<TGame[]>({
+    const games = await fetchApi<Game[]>({
       endpoint: this.BASE_ENDPOINT,
       method: 'GET',
     })
     return games
   }
 
-  async getOne(id: number) {
-    const game = await fetchApi<TGame>({
+  async getOne(id: string) {
+    const game = await fetchApi<Game>({
       endpoint: `${this.BASE_ENDPOINT}/${id}`,
       method: 'GET'
     })
     return game
   }
 
+  async getOneByCode(code: string) {
+    const game = await fetchApi<Game>({
+      endpoint: `${this.BASE_ENDPOINT}/code/${code}`,
+      method: 'GET',
+    })
+    return game
+  }
+
   async addPlayer(id: number, playerId: number) {
-    const game = await fetchApi<TGame>({
+    const game = await fetchApi<Game>({
       endpoint: `${this.BASE_ENDPOINT}/${id}`,
       method: 'PATCH',
       body: {
@@ -42,8 +50,8 @@ class GamesController {
     return game
   }
 
-  async create(game: TGame) {
-    const g = await fetchApi<TGame>({
+  async create(game: GameCreation) {
+    const g = await fetchApi<Game>({
       endpoint: this.BASE_ENDPOINT,
       method: 'POST',
       body: game,

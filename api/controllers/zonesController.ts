@@ -1,5 +1,5 @@
 import { fetchApi } from "../../api/fetchApi";
-import { Zone } from "../../types/Zone";
+import { TZone, Zone } from "../../types/Zone";
 
 /**
  * ZONES
@@ -18,6 +18,17 @@ class ZonesController {
     return fetchApi<Zone>({
       endpoint: `${this.BASE_ENDPOINT}/${id}`,
       method: 'GET'
+    })
+  }
+
+  async create(zone: TZone) {
+    return fetchApi<Zone>({
+      endpoint: `${this.BASE_ENDPOINT}`,
+      method: 'POST',
+      body: zone,
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
   }
 }

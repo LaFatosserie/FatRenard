@@ -1,14 +1,14 @@
 import {
   PayloadAction,
   createSlice,
-  nanoid,
   createAsyncThunk,
 } from "@reduxjs/toolkit";
 import { RootState } from "redux/store";
 import { EPlayerType, IAppState, MODALS } from "types/App";
-import { TLocation, TUser } from "types/User";
-import { TZone } from "types/Zone";
 import AuthController from "api/controllers/authController";
+import { toast } from "react-toastify";
+import GamesController from "api/controllers/gameController";
+import { GameCreation, GameStatus } from "types/Game";
 
 const initialState: IAppState = {
   ready: false,
@@ -19,12 +19,16 @@ const initialState: IAppState = {
   authLoading: false,
   error: '',
   game: {
-    id: "",
-    foxId: "",
-    players: [],
-    zoneId: "",
-    code: "",
-    time: 120000,
+    _id: '',
+    name: '',
+    foxId: '',
+    playersId: [],
+    zoneId: '',
+    code: '',
+    status: GameStatus.Created,
+    date: new Date(Date.now()),
+    public: false,
+    time: 10000,
   },
 };
 
@@ -33,12 +37,10 @@ export const logInUser = createAsyncThunk(
   async ({ username, password }: { username: string, password: string },
     { rejectWithValue, dispatch }) => {
     const res = await new AuthController().login(username, password);
-    console.log("LOGIN ASYNC RES", res)
     if (!res || (res && !res.ok)) {
-      console.log('REJECT')
+      toast(res?.error || 'ERROR', { type: 'error' })
       return rejectWithValue(res?.error)
     }
-    console.log("SIGNED IN")
     // Save Token
     localStorage.setItem('__fat_token__', res.data.token)
     // Run Me to get User
@@ -51,13 +53,12 @@ export const logInUser = createAsyncThunk(
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (params: { username: string, password: string, firstname: string, lastname: string, email: string },
-    { rejectWithValue, dispatch }) => {
+    { rejectWithValue }) => {
     const res = await new AuthController().register(params);
     if (!res || (res && !res.ok)) {
-      rejectWithValue(res?.error)
-      return
+      toast(res?.error || 'ERROR', { type: 'error' })
+      return rejectWithValue(res?.error)
     }
-    console.log("REGISTERED")
     // Save Token
     localStorage.setItem('__fat_token__', res.data.token)
     // Return userId
@@ -70,9 +71,9 @@ export const me = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const res = await new AuthController().me()
     if (!res.ok) {
-      rejectWithValue(res.error)
-      return
+      return rejectWithValue(res.error)
     }
+    toast(`Hello ${res.data.firstname} !`, { type: 'success', theme: 'light' })
     return res.data
   }
 )
@@ -85,35 +86,36 @@ export const logout = createAsyncThunk(
   }
 )
 
-// export const createGame = createAsyncThunk(
-//   "app/newGame",
-//   async (
-//     {
-//       zoneId,
-//       username,
-//       userId,
-//       time,
-//     }: { zoneId: string; username: string; userId: string; time: number },
-//     { dispatch }
-//   ) => {
-//     const api = new API();
-//     const gameId = await api.games.create(zoneId, username, time, userId);
-//     dispatch(loadGame({ id: gameId }));
-//     return gameId;
-//   }
-// );
-// export const loadGame = createAsyncThunk(
-//   "app/loadGame",
-//   async ({ id, joining }: { id: number; joining?: boolean }) => {
-//     const api = new API();
-//     const game =
-//     // joining
-//     //   ? await api.games.getOneFromCode(id)
-//     //   :
-//       await api.games.getOne(id);
-//     return game;
-//   }
-// );
+export const createGame = createAsyncThunk(
+  "app/newGame",
+  async (
+    game: GameCreation,
+    { rejectWithValue }
+  ) => {
+    const res = await new GamesController().create(game);
+    if (!res || (res && !res.ok)) {
+      toast(res.error, { type: 'error' })
+      return rejectWithValue(res.error);
+    }
+    localStorage.setItem('__fat_game__', res.data._id)
+    return res.data;
+  }
+);
+
+export const loadGame = createAsyncThunk(
+  "app/loadGame",
+  async ({ id, joining }: { id: string; joining?: boolean }) => {
+    const controller = new GamesController()
+    const game =
+     joining
+       ? await controller.getOneByCode(id)
+       :
+      await controller.getOne(id);
+    return game;
+  }
+);
+
+
 // export const addPlayerToGame = createAsyncThunk(
 //   "app/addPlayerToGame",
 //   async (
@@ -129,18 +131,6 @@ export const logout = createAsyncThunk(
 //     return playerId;
 //   }
 // );
-// export const addZone = createAsyncThunk(
-//   'app/createZone',
-//   async (zone: TZone, { dispatch }) => {
-//     const api = new API()
-//     try {
-//       await api.zones.create(zone)
-//       dispatch(enqueueSnack('Zone ajoutee', { variant: 'success' }))
-//     } catch {
-//       dispatch(enqueueSnack('Erreur lors de l\'ajout de la zone', { variant: 'error' }))
-//     }
-//   }
-// )
 
 function resetError(state: IAppState) {
   if (state.error)
@@ -178,21 +168,14 @@ const appSlice = createSlice({
     // updateFoxPos(state, action: PayloadAction<TLocation>) {
     //   if (state.game) state.game.foxPos = action.payload;
     // },
-    localAddPlayerToGame(state, action: PayloadAction<string[]>) {
-      const toAdd: string[] = [];
-      action.payload.forEach((p) => {
-        if (!state.game.players.includes(p)) toAdd.push(p);
-      });
-      state.game.players = [...state.game.players, ...toAdd];
-    },
   },
   extraReducers: (builder) => {
-    // builder.addCase(createGame.fulfilled, (state, action) => {
-    //   state.game.id = action.payload;
-    // });
-    // builder.addCase(loadGame.fulfilled, (state, action) => {
-    //   state.game = action.payload;
-    // });
+    builder.addCase(createGame.fulfilled, (state, action) => {
+      state.game = action.payload;
+    });
+    builder.addCase(loadGame.fulfilled, (state, action) => {
+      state.game = action.payload.data;
+    });
     // builder.addCase(addPlayerToGame.fulfilled, (state, action) => {
     //   if (!state.game.players.includes(action.payload))
     //     state.game.players = [...state.game.players, action.payload];
@@ -270,7 +253,6 @@ export const {
   updatePlayerType,
   updateFoxId,
   updateZoneId,
-  localAddPlayerToGame,
 } = appSlice.actions;
 
 export default appSlice.reducer;
@@ -286,5 +268,5 @@ export const selectFoxId = (state: RootState) => state.app.game?.foxId;
 export const selectAuthLoading = (state: RootState) => state.app.authLoading;
 export const selectError = (state: RootState) => state.app.error;
 // export const selectFoxPos = (state: RootState) => state.app.game?.foxPos;
-export const selectGamePlayers = (state: RootState) => state.app.game?.players;
+export const selectGamePlayers = (state: RootState) => state.app.game?.playersId;
 export const selectGameZone = (state: RootState) => state.app.game?.zoneId;

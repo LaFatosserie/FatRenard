@@ -3,7 +3,7 @@ import Layout from '../components/Layout/Layout'
 import {useEffect, useState} from "react"
 import {useAppDispatch, useAppSelector} from "redux/hook"
 import SplashScreen from "components/app/SplashScreen"
-import {appReady, me, selectUserLoggedIn} from "redux/slices/App"
+import {appReady, me, selectUserId, selectUserLoggedIn} from "redux/slices/App"
 import { Wrapper } from '@googlemaps/react-wrapper'
 import { Map } from 'components/map'
 import Circle from 'components/map/Circle'
@@ -15,6 +15,7 @@ const Home: NextPage = () => {
     const router = useRouter()
     
     const loggedIn = useAppSelector(selectUserLoggedIn)
+    const userId = useAppSelector(selectUserId)
 
     const [center, setCenter] = useState<google.maps.LatLngLiteral>({
       lat: 45.7555016,
@@ -34,8 +35,7 @@ const Home: NextPage = () => {
 
     useEffect(() => {
       const token = localStorage.getItem('__fat_token__')
-      if (token) {
-        console.log('HAS TOKEN LOADING USER')
+      if (token && !userId) {
         dispatch(me())
       } else  if (!loggedIn && token) {
         router.push('auth/signin')

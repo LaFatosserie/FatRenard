@@ -1,16 +1,18 @@
 import CONST from '../redux/constants'
 import { UserStatus } from './App'
+import { WithId } from './Doc'
 
 /**
  * Type
  */
-export type Player = {
-  _id: number
+export type TPlayer = {
   username: string
   firstname: string
   lastname: string
   status: UserStatus
 }
+
+export type Player = TPlayer & WithId
 
 /**
  * REDUX ACTIONS

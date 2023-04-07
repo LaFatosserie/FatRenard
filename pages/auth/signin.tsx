@@ -3,6 +3,7 @@ import Layout from 'components/Layout/Layout'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 import { useAppDispatch, useAppSelector } from 'redux/hook'
 import { selectUserLoggedIn } from 'redux/selectors'
 import { logInUser, selectAuthLoading, selectError } from 'redux/slices/App'
@@ -19,6 +20,11 @@ function SignIn() {
 
   const signIn = () => {
     dispatch(logInUser({ username, password }))
+  }
+
+  const test = () => {
+    console.log('Display toast')
+    toast('Testing', { type: 'success' })
   }
 
   useEffect(() => {
@@ -66,7 +72,7 @@ function SignIn() {
           />
           <Spacer />
           <Col style={{ width: '100%' }}>
-            <Button auto rounded bordered flat style={{ width: '100%', marginBottom: 10 }}>
+            <Button auto rounded bordered flat style={{ width: '100%', marginBottom: 10 }} onPress={test}>
               {username != '' ? 'Annuler' : 'Creer compte'}
             </Button>
             <Button
